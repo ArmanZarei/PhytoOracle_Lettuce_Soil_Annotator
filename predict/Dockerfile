@@ -1,19 +1,31 @@
-FROM python:3.8
+FROM ubuntu:18.04
 
-WORKDIR /src
 
-ADD requirements.txt .
 
-RUN pip3 install -r requirements.txt
-RUN pip3 install torch-points-kernels
-RUN pip3 install torch-scatter -f https://pytorch-geometric.com/whl/torch-1.9.0+cu102.html
-RUN pip3 install torch-sparse -f https://pytorch-geometric.com/whl/torch-1.9.0+cu102.html
-RUN pip3 install torch-cluster -f https://pytorch-geometric.com/whl/torch-1.9.0+cu102.html
-RUN pip3 install torch-spline-conv -f https://pytorch-geometric.com/whl/torch-1.9.0+cu102.html
-RUN pip3 install torch-geometric
+WORKDIR /opt
+COPY . /opt
 
-RUN apt-get update && apt-get install -y libgl1
+USER root
 
-ADD . .
+RUN apt-get update
+RUN apt-get install -y python3.6-dev \
+                       python3-pip \
+                       wget \
+                       build-essential \
+                       software-properties-common \
+                       apt-utils \
+                       ffmpeg \
+                       libsm6 \
+                       libxext6
 
-ENTRYPOINT ["python3", "./main.py"]
+
+
+RUN apt-get update
+RUN apt-get install -y libgdal-dev
+RUN pip3 install --upgrade pip
+RUN pip3 install -r /opt/predict/requirements.txt
+RUN ldconfig
+RUN apt-get install -y locales && locale-gen en_US.UTF-8
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+
+ENTRYPOINT [ "/usr/bin/python3", "/opt/predict/main.py" ]

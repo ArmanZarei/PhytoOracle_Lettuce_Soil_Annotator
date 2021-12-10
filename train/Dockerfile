@@ -1,14 +1,28 @@
+FROM ubuntu:18.04
 
-FROM python:3.8
+WORKDIR /opt
+COPY . /opt
 
-WORKDIR /src
+USER root
 
-ADD requirements.txt .
+RUN apt-get update
+RUN apt-get install -y python3.6-dev \
+                       python3-pip \
+                       wget \
+                       build-essential \
+                       software-properties-common \
+                       apt-utils \
+                       ffmpeg \
+                       libsm6 \
+                       libxext6
+                       
 
-RUN pip3 install -r requirements.txt
+RUN apt-get update
+RUN apt-get install -y libgdal-dev
+RUN pip3 install --upgrade pip
+RUN pip3 install -r /opt/train/requirements.txt
+RUN ldconfig
+RUN apt-get install -y locales && locale-gen en_US.UTF-8
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-RUN apt-get update && apt-get install -y libgl1
-
-ADD . .
-
-ENTRYPOINT ["python3", "./train.py"]
+ENTRYPOINT [ "/usr/bin/python3", "/opt/train/train.py" ]
